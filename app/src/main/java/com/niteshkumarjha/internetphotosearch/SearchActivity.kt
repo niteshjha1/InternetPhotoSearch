@@ -14,6 +14,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -41,12 +42,11 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mAdapter: PhotoAdapter
 
-    private val COLUMN_NUM = 1
+    private val COLUMN_NUM = 2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
-
 
         val searchText = intent.getStringExtra("Search_text")
 
@@ -88,8 +88,6 @@ class SearchActivity : AppCompatActivity() {
 
     private fun performImageSearch(searchText: String) {
         // Set up parameters for the API request
-
-        // Set up parameters for the API request
         val parameters: MutableMap<String, String> = HashMap()
         parameters.put("method", METHOD_SEARCH)
         parameters.put("api_key", API_KEY)
@@ -98,16 +96,12 @@ class SearchActivity : AppCompatActivity() {
         parameters.put("safe_search", "1")
         parameters.put("text", searchText)
 
-        // Retrofit instance
         val retrofit = Retrofit.Builder().baseUrl("https://api.flickr.com/services/rest/")
             .addConverterFactory(GsonConverterFactory.create()).build()
 
-        // Api interface
         val flickrApi = retrofit.create<FlickrApi>(FlickrApi::class.java)
 
-        // Create API call
         val call = flickrApi.getPhotos(parameters)
-
 
         // Enqueue the call for asynchronous execution
         call.enqueue(object : Callback<JsonObject> {
@@ -123,7 +117,7 @@ class SearchActivity : AppCompatActivity() {
                     for (i in 0 until photoArr.size()) {
                         val itemObj = photoArr[i].asJsonObject
 
-                        // Create PhotoModel object and add to result list
+                        // PhotoModel object and add to result list
                         val item = PhotoModel(
                             itemObj.getAsJsonPrimitive("id").asString,
                             itemObj.getAsJsonPrimitive("secret").asString,
@@ -171,9 +165,7 @@ class SearchActivity : AppCompatActivity() {
         override fun onPostExecute(bitmap: Bitmap?) {
             val context = contextReference.get()
             if (context != null && bitmap != null) {
-                // ...
-                // (The code to save the image to the gallery)
-                // ...
+                // save the image to the gallery
             }
         }
     }

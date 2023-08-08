@@ -8,18 +8,19 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <!-- RecyclerView to display images -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:scrollbars="vertical" />
+        android:layout_height="70dp"
+        android:layout_marginTop="150dp"
+        android:gravity="center"
+        android:text="@string/find_the_right_image_easy"
+        android:textSize="30sp"
+        android:textStyle="bold" />
 
-    <!-- Search Bar Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
+        android:layout_marginTop="50dp"
         android:layout_marginBottom="10dp"
         android:orientation="horizontal">
 
@@ -31,14 +32,8 @@
             android:hint="@string/enter_text"
             android:imeOptions="actionDone"
             android:inputType="text"
-            android:maxLines="1" />
-
-        <Button
-            android:id="@+id/Clear_button"
-            android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_marginRight="10dp"
-            android:text="@string/clear" />
+            android:maxLines="1"
+            android:textColorHint="@color/black" />
 
         <Button
             android:id="@+id/Search_button"
@@ -46,5 +41,10 @@
             android:layout_height="50dp"
             android:text="@string/search" />
     </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="364dp"
+        android:background="@drawable/home_bakcground" />
 
 </LinearLayout>

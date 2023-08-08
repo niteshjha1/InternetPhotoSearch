@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">Search Your Image</string>
-    <string name="enter_text">Enter text</string>
+    <string name="enter_text">What Are you Searching?</string>
     <string name="clear">Clear</string>
     <string name="search">Search</string>
     <string name="save_to_gallery">Save to Gallery</string>
+    <string name="find_the_right_image_easy">Find the right \nimage easy</string>
 </resources>
