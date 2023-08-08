@@ -48,6 +48,11 @@ class SearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
+        //toolbar
+        val customToolbar: Toolbar = findViewById(R.id.custom_toolbar)
+        setSupportActionBar(customToolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         val searchText = intent.getStringExtra("Search_text")
 
         if (searchText != null) {
