@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Search Your Image</string>
+    <string name="enter_text">Enter text</string>
+    <string name="clear">Clear</string>
+    <string name="search">Search</string>
+    <string name="save_to_gallery">Save to Gallery</string>
+</resources>
