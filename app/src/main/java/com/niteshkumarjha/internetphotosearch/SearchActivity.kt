@@ -20,8 +20,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.JsonObject
+import com.niteshkumarjha.internetphotosearch.FirebaseHelper.storeSearchDetails
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -80,6 +80,7 @@ class SearchActivity : AppCompatActivity() {
             if (searchText.isEmpty()) {
                 Toast.makeText(this, "Enter a search keyword", Toast.LENGTH_SHORT).show()
             } else {
+                storeSearchDetails(searchText)
                 performImageSearch(searchText)
             }
         }
