@@ -10,18 +10,20 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var searchEditText: EditText
     private lateinit var searchButton: Button
     private lateinit var firestoreDB: FirebaseFirestore
+    private val LOG_TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize Firebase
         FirebaseApp.initializeApp(this)
         firestoreDB = FirebaseFirestore.getInstance()
 
@@ -32,11 +34,24 @@ class MainActivity : AppCompatActivity() {
             val searchText = searchEditText.text.toString().trim()
 
             if (searchText.isEmpty()) {
-                Toast.makeText(this@MainActivity, "Enter a search keyword", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Enter a search keyword", Toast.LENGTH_SHORT)
+                    .show()
             } else {
-                val serialNumber = Build.SERIAL
-                val deviceName = Build.DEVICE
-                storeSearch(searchText, serialNumber, deviceName)
+                val userId = Build.ID
+                val userName = Build.USER;
+                val deviceName = Build.DEVICE.toUpperCase(Locale.getDefault())
+                val manufacturer = Build.MANUFACTURER
+                val timeStamp =
+                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                Log.e(
+                    LOG_TAG, "NITESH_NITESH Serial Number : $userId || " +
+                            "Device Name : $deviceName || " +
+                            "Manufacturer : $manufacturer || " +
+                            "userName : $userName || " +
+                            "Manufacturer : $manufacturer || " +
+                            "Timestamp : $timeStamp"
+                )
+                storeSearch(userId, deviceName, searchText, manufacturer, timeStamp)
                 openSearchActivity(searchText)
             }
         }
@@ -48,23 +63,30 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun storeSearch(searchText: String, serialNumber: String, deviceName: String) {
-        // Access a Cloud Firestore instance and store the search text along with device details
+    private fun storeSearch(
+        userId: String,
+        deviceName: String,
+        manufacturer: String,
+        timeStamp: String,
+        searchText: String,
+    ) {
         val searchDetails = hashMapOf(
-            "searchText" to searchText,
-            "serialNumber" to serialNumber,
+            "userId" to userId,
             "deviceName" to deviceName,
-            "timestamp" to System.currentTimeMillis()
+            "manufacturer" to manufacturer,
+            "searchText" to searchText,
+            "timestamp" to timeStamp
         )
 
-        // Add a new document with a generated ID
         firestoreDB.collection("searches")
             .add(searchDetails)
             .addOnSuccessListener { documentReference ->
-                Log.e("MainActivity", "Search details added with ID: ${documentReference.id}")
+                val message = "Search details added with ID: ${documentReference.id}"
+                Log.e(LOG_TAG, message)
             }
             .addOnFailureListener { e ->
-                Log.e("MainActivity", "Error adding search details", e)
+                val errorMessage = "Error adding search details: ${e.message}"
+                Log.e(LOG_TAG, errorMessage, e)
             }
     }
 }
