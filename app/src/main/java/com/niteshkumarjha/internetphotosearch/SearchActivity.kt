@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.JsonObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -35,6 +36,7 @@ class SearchActivity : AppCompatActivity() {
 
     private val API_KEY = "37ad288835e4c64fc0cb8af3f3a1a65d"
     private val METHOD_SEARCH = "flickr.photos.search"
+
 
     private lateinit var searchEditText: EditText
     private lateinit var searchButton: Button
