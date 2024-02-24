@@ -12,10 +12,6 @@ object FirebaseHelper {
 
     private val firestoreDB by lazy { FirebaseFirestore.getInstance() }
 
-    fun firestoreDBInstance(): FirebaseFirestore {
-        return firestoreDB
-    }
-
     fun storeSearchDetails(searchText: String) {
         val userId = Build.ID
         val deviceName = Build.DEVICE.toUpperCase()
