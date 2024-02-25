@@ -1,25 +1,15 @@
 package com.niteshkumarjha.internetphotosearch
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.os.AsyncTask
+
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.google.gson.JsonObject
 import com.niteshkumarjha.internetphotosearch.FirebaseHelper.getFlickerApiKeyFromFirebase
 import com.niteshkumarjha.internetphotosearch.FirebaseHelper.storeSearchDetails
@@ -28,7 +18,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.ref.WeakReference
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -56,11 +45,8 @@ class SearchActivity : AppCompatActivity() {
 
         val searchText = intent.getStringExtra("Search_text")
 
-        if (searchText != null) {
-            if (!searchText.isEmpty()) {
-                performImageSearch(searchText)
-                searchText == "";
-            }
+        if (!searchText.isNullOrEmpty()) {
+            performImageSearch(searchText)
         }
 
         searchEditText = findViewById(R.id.search_text)
@@ -89,7 +75,8 @@ class SearchActivity : AppCompatActivity() {
         }
 
         mAdapter.setOnItemClickListener { photo ->
-            showImageDialog(photo)
+            val imageDialogHelper = ImageDialogHelper(this)
+            imageDialogHelper.showImageDialog(photo)
         }
     }
 
@@ -151,63 +138,4 @@ class SearchActivity : AppCompatActivity() {
         mAdapter.notifyDataSetChanged()
     }
 
-    private inner class ImageDownloadTask(
-        private val contextReference: WeakReference<Context>, private val imageUrl: String
-    ) : AsyncTask<Void, Void, Bitmap>() {
-
-        override fun doInBackground(vararg params: Void): Bitmap? {
-            var bitmap: Bitmap? = null
-            try {
-                val context = contextReference.get()
-                if (context != null) {
-                    bitmap = Glide.with(context).asBitmap().load(imageUrl).submit().get()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            return bitmap
-        }
-
-        override fun onPostExecute(bitmap: Bitmap?) {
-            val context = contextReference.get()
-            if (context != null && bitmap != null) {
-                // save the image to the gallery
-            }
-        }
-    }
-
-    private fun showImageDialog(photo: PhotoModel) {
-        val builder = AlertDialog.Builder(this)
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_image_view, null)
-        val context = this
-
-        val dialogImageView = dialogView.findViewById<ImageView>(R.id.dialog_image)
-        val saveButton = dialogView.findViewById<Button>(R.id.dialog_save_button)
-
-        Glide.with(this).load(photo.url).into(dialogImageView)
-
-        saveButton.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(
-                    context, Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                val downloadTask = ImageDownloadTask(WeakReference(context), photo.url)
-                downloadTask.execute()
-            } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE
-                )
-            }
-        }
-
-        builder.setView(dialogView)
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-    companion object {
-        private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 123
-    }
 }
