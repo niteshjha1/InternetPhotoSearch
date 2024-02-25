@@ -58,3 +58,6 @@ signing/
 # Firebase/Sentry
 google-services.json
 sentry.properties
+
+.idea/
+.idea/gradle.xml

@@ -21,6 +21,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.gson.JsonObject
+import com.niteshkumarjha.internetphotosearch.FirebaseHelper.getFlickerApiKeyFromFirebase
+import com.niteshkumarjha.internetphotosearch.FirebaseHelper.storeSearchDetails
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,8 +34,7 @@ import java.util.HashMap
 
 
 class SearchActivity : AppCompatActivity() {
-
-    private val API_KEY = "37ad288835e4c64fc0cb8af3f3a1a65d"
+    private var api_key = ""
     private val METHOD_SEARCH = "flickr.photos.search"
 
     private lateinit var searchEditText: EditText
@@ -78,6 +79,7 @@ class SearchActivity : AppCompatActivity() {
             if (searchText.isEmpty()) {
                 Toast.makeText(this, "Enter a search keyword", Toast.LENGTH_SHORT).show()
             } else {
+                storeSearchDetails(searchText)
                 performImageSearch(searchText)
             }
         }
@@ -92,10 +94,10 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun performImageSearch(searchText: String) {
-        // Set up parameters for the API request
+        api_key = getFlickerApiKeyFromFirebase()
         val parameters: MutableMap<String, String> = HashMap()
         parameters.put("method", METHOD_SEARCH)
-        parameters.put("api_key", API_KEY)
+        parameters.put("api_key", api_key)
         parameters.put("format", "json")
         parameters.put("nojsoncallback", "1")
         parameters.put("safe_search", "1")
@@ -139,7 +141,6 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<JsonObject>, t: Throwable) {
-                // Handle API call failure
                 Log.e("API Failure", t.toString())
             }
         })

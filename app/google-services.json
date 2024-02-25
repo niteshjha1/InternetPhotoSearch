@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "57911528601",
+    "project_id": "internetimagesearch",
+    "storage_bucket": "internetimagesearch.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57911528601:android:6ec5f00272ceb20415bc08",
+        "android_client_info": {
+          "package_name": "com.niteshkumarjha.internetphotosearch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjeECO2zMv6787Og__eyoC-XU-k0MT8Ds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
