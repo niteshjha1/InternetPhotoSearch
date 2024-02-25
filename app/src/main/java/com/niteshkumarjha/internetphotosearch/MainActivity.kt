@@ -1,7 +1,6 @@
 package com.niteshkumarjha.internetphotosearch
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -10,9 +9,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.niteshkumarjha.internetphotosearch.FirebaseHelper.fetchApiKeyFromFirebase
 import com.niteshkumarjha.internetphotosearch.FirebaseHelper.storeSearchDetails
-import java.text.SimpleDateFormat
-import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +27,8 @@ class MainActivity : AppCompatActivity() {
         FirebaseApp.initializeApp(this)
         firestoreDB = FirebaseFirestore.getInstance()
 
+        fetchApiKeyFromFirebase { }
+
         searchEditText = findViewById(R.id.search_text)
         searchButton = findViewById(R.id.Search_button)
 
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this@MainActivity, "Enter a search keyword", Toast.LENGTH_SHORT)
                     .show()
             } else {
+                Log.e(LOG_TAG, "Search Keyword : $searchText")
                 storeSearchDetails(searchText)
                 openSearchActivity(searchText)
             }
