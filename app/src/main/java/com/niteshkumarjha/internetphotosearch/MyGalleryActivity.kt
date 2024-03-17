@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
@@ -21,11 +22,10 @@ class MyGalleryActivity : AppCompatActivity() {
         setContentView(R.layout.activity_empty)
 
         recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.layoutManager = GridLayoutManager(this, 4)
 
         checkReadExternalStoragePermission()
     }
-
     private fun checkReadExternalStoragePermission() {
         if (ContextCompat.checkSelfPermission(
                 this,
