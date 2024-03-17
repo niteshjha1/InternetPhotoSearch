@@ -40,10 +40,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun MainActivityUI(openSearchActivity: (String) -> Unit) {
+fun MainActivityUI(openSearchActivity: (String) -> Unit, openMyGalleryActivity: () -> Unit) {
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     var isMenuOpen by remember { mutableStateOf(false) }
-
+    if (isMenuOpen) {
+        MenuDialog(onDismiss = { isMenuOpen = false }, onMyGalleryClick = openMyGalleryActivity)
+    }
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart
     ) {
@@ -118,13 +120,13 @@ fun MainActivityUI(openSearchActivity: (String) -> Unit) {
         )
 
         if (isMenuOpen) {
-            MenuDialog(onDismiss = { isMenuOpen = false })
+            MenuDialog(onDismiss = { isMenuOpen = false }, onMyGalleryClick = openMyGalleryActivity)
         }
     }
 }
 
 @Composable
-fun MenuDialog(onDismiss: () -> Unit) {
+fun MenuDialog(onDismiss: () -> Unit, onMyGalleryClick: () -> Unit) {
     Dialog(
         onDismissRequest = { onDismiss() }
     ) {
@@ -140,21 +142,21 @@ fun MenuDialog(onDismiss: () -> Unit) {
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                MenuItem(text = "My Gallery")
-                MenuItem(text = "Login")
-                MenuItem(text = "Learn More")
-                MenuItem(text = "About")
-                MenuItem(text = "Links")
+                MenuItem(text = "My Gallery", onClick = onMyGalleryClick)
+                MenuItem(text = "Login", onClick = onMyGalleryClick)
+                MenuItem(text = "Learn More", onClick = onMyGalleryClick)
+                MenuItem(text = "About", onClick = onMyGalleryClick)
+                MenuItem(text = "Links", onClick = onMyGalleryClick)
             }
         }
     }
 }
 
 @Composable
-fun MenuItem(text: String) {
+fun MenuItem(text: String, onClick: () -> Unit) {
     Spacer(modifier = Modifier.height(8.dp))
     Button(
-        onClick = { /* Item click */ },
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
@@ -169,4 +171,3 @@ fun MenuItem(text: String) {
         )
     }
 }
-

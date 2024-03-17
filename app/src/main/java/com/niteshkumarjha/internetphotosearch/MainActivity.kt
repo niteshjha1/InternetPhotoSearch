@@ -15,28 +15,46 @@ import com.niteshkumarjha.internetphotosearch.ui.theme.InternetPhotoSearchTheme
 
 
 class MainActivity : ComponentActivity() {
-
     private lateinit var firestoreDB: FirebaseFirestore
-    private val LOG_TAG = "MainActivity"
+    private val LOG_TAG = "MainActivity NITESH_NITESH"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Log.d(LOG_TAG, "MainActivity onCreate called")
 
         FirebaseApp.initializeApp(this)
         firestoreDB = FirebaseFirestore.getInstance()
 
         fetchApiKeyFromFirebase { }
 
-        setContent {
-            InternetPhotoSearchTheme {
-                Surface(color = MaterialTheme.colorScheme.background) {
-                    MainActivityUI { searchText ->
-                        openSearchActivity(searchText)
+        try {
+            setContent {
+                InternetPhotoSearchTheme {
+                    Surface(color = MaterialTheme.colorScheme.background) {
+                        MainActivityUI(
+                            openSearchActivity = { searchText ->
+                                openSearchActivity(searchText)
+                            },
+                            openMyGalleryActivity = {
+                                Log.d(LOG_TAG, "Open MyGalleryActivity clicked")
+                                openMyGalleryActivity()                            }
+                        )
                     }
                 }
             }
+        } catch (e: Exception) {
+            // Log any exceptions
+            Log.e(LOG_TAG, "Error in MainActivity: ${e.message}")
+            e.printStackTrace()
         }
     }
+
+    private fun openMyGalleryActivity() {
+        Log.d(LOG_TAG, "Open MyGalleryActivity clicked")
+        startActivity(Intent(this@MainActivity, MyGalleryActivity::class.java))
+    }
+
 
     private fun openSearchActivity(searchText: String) {
         Log.d(LOG_TAG, "openSearchActivity")

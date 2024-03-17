@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.Manifest;
 import android.content.pm.PackageManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ImageView
@@ -15,10 +16,12 @@ import com.niteshkumarjha.internetphotosearch.ImageDownloader.ImageDownloadTask
 import java.lang.ref.WeakReference
 
 class ImageDialogHelper(private val activity: Activity) {
+    public val LOG_TAG = "ImageDialogHelper"
 
     private var imageUrl: String? = null
 
     fun showImageDialog(photo: PhotoModel) {
+        Log.d(LOG_TAG, "NITESH_NITESH showImageDialog ")
         val builder = AlertDialog.Builder(activity)
         val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_image_view, null)
 
@@ -44,12 +47,15 @@ class ImageDialogHelper(private val activity: Activity) {
         dialog.show()
     }
 
-    private fun saveImageToGallery() {
-        val downloadTask = ImageDownloadTask(WeakReference(activity), imageUrl ?: "")
-        downloadTask.execute()
+    fun saveImageToGallery() {
+        Log.d(LOG_TAG, "NITESH_NITESH saveImageToGallery clicked")
+        imageUrl?.let {
+            ImageDownloader.saveImageToGallery(activity, it)
+        }
     }
 
     private fun requestStoragePermission() {
+        Log.d(LOG_TAG, "NITESH_NITESH requestStoragePermission ")
         ActivityCompat.requestPermissions(
             activity,
             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
@@ -61,6 +67,7 @@ class ImageDialogHelper(private val activity: Activity) {
         requestCode: Int,
         grantResults: IntArray
     ) {
+        Log.d(LOG_TAG, "NITESH_NITESH onRequestPermissionsResult ")
         when (requestCode) {
             REQUEST_CODE_WRITE_EXTERNAL_STORAGE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

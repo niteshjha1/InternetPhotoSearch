@@ -25,6 +25,7 @@ import java.util.HashMap
 class SearchActivity : AppCompatActivity() {
     private var api_key = ""
     private val METHOD_SEARCH = "flickr.photos.search"
+    public val LOG_TAG = "SearchActivity"
 
     private lateinit var searchEditText: EditText
     private lateinit var searchButton: Button
