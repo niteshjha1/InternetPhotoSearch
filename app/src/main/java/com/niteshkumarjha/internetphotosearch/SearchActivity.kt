@@ -1,11 +1,12 @@
 package com.niteshkumarjha.internetphotosearch
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.os.AsyncTask
-import android.os.Bundle
+import android.os.*
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
@@ -28,10 +29,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.OutputStream
 import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.HashMap
-
+import java.util.*
 
 class SearchActivity : AppCompatActivity() {
     private var api_key = ""
@@ -49,17 +49,15 @@ class SearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
-        //toolbar
+        // Toolbar setup
         val customToolbar: Toolbar = findViewById(R.id.custom_toolbar)
         setSupportActionBar(customToolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val searchText = intent.getStringExtra("Search_text")
-
-        if (searchText != null) {
-            if (!searchText.isEmpty()) {
-                performImageSearch(searchText)
-                searchText == "";
+        searchText?.let {
+            if (it.isNotEmpty()) {
+                performImageSearch(it)
             }
         }
 
@@ -75,7 +73,6 @@ class SearchActivity : AppCompatActivity() {
 
         searchButton.setOnClickListener {
             val searchText = searchEditText.text.toString().trim()
-
             if (searchText.isEmpty()) {
                 Toast.makeText(this, "Enter a search keyword", Toast.LENGTH_SHORT).show()
             } else {
@@ -96,48 +93,43 @@ class SearchActivity : AppCompatActivity() {
     private fun performImageSearch(searchText: String) {
         api_key = getFlickerApiKeyFromFirebase()
         val parameters: MutableMap<String, String> = HashMap()
-        parameters.put("method", METHOD_SEARCH)
-        parameters.put("api_key", api_key)
-        parameters.put("format", "json")
-        parameters.put("nojsoncallback", "1")
-        parameters.put("safe_search", "1")
-        parameters.put("text", searchText)
+        parameters["method"] = METHOD_SEARCH
+        parameters["api_key"] = api_key
+        parameters["format"] = "json"
+        parameters["nojsoncallback"] = "1"
+        parameters["safe_search"] = "1"
+        parameters["text"] = searchText
 
-        val retrofit = Retrofit.Builder().baseUrl("https://api.flickr.com/services/rest/")
-            .addConverterFactory(GsonConverterFactory.create()).build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.flickr.com/services/rest/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
-        val flickrApi = retrofit.create<FlickrApi>(FlickrApi::class.java)
-
+        val flickrApi = retrofit.create(FlickrApi::class.java)
         val call = flickrApi.getPhotos(parameters)
 
-        // Enqueue the call for asynchronous execution
         call.enqueue(object : Callback<JsonObject> {
             override fun onResponse(call: Call<JsonObject>, response: Response<JsonObject>) {
                 if (!response.isSuccessful) {
-                    Log.e("API Response", "Code: " + response.code())
+                    Log.e("API Response", "Code: ${response.code()}")
                     return
                 }
                 val result: MutableList<PhotoModel> = ArrayList()
-                val photos = response.body()!!.getAsJsonObject("photos")
-                if (photos != null) {
-                    val photoArr = photos.getAsJsonArray("photo")
-                    for (i in 0 until photoArr.size()) {
-                        val itemObj = photoArr[i].asJsonObject
-
-                        // PhotoModel object and add to result list
-                        val item = PhotoModel(
-                            itemObj.getAsJsonPrimitive("id").asString,
-                            itemObj.getAsJsonPrimitive("secret").asString,
-                            itemObj.getAsJsonPrimitive("server").asString,
-                            itemObj.getAsJsonPrimitive("farm").asString
+                val photos = response.body()?.getAsJsonObject("photos")
+                photos?.getAsJsonArray("photo")?.forEach { photo ->
+                    photo.asJsonObject.let {
+                        result.add(
+                            PhotoModel(
+                                it["id"].asString,
+                                it["secret"].asString,
+                                it["server"].asString,
+                                it["farm"].asString
+                            )
                         )
-                        result.add(item)
                     }
-                    mAdapter.addAll(result)
-                    mAdapter.notifyDataSetChanged()
-                } else {
-                    Log.e("API Response", "No 'photos' object found in the response")
                 }
+                mAdapter.addAll(result)
+                mAdapter.notifyDataSetChanged()
             }
 
             override fun onFailure(call: Call<JsonObject>, t: Throwable) {
@@ -152,26 +144,47 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private inner class ImageDownloadTask(
-        private val contextReference: WeakReference<Context>, private val imageUrl: String
+        private val contextReference: WeakReference<Context>,
+        private val imageUrl: String
     ) : AsyncTask<Void, Void, Bitmap>() {
 
         override fun doInBackground(vararg params: Void): Bitmap? {
-            var bitmap: Bitmap? = null
-            try {
-                val context = contextReference.get()
-                if (context != null) {
-                    bitmap = Glide.with(context).asBitmap().load(imageUrl).submit().get()
-                }
+            return try {
+                Glide.with(contextReference.get()!!)
+                    .asBitmap()
+                    .load(imageUrl)
+                    .submit()
+                    .get()
             } catch (e: Exception) {
                 e.printStackTrace()
+                null
             }
-            return bitmap
         }
 
         override fun onPostExecute(bitmap: Bitmap?) {
-            val context = contextReference.get()
-            if (context != null && bitmap != null) {
-                // save the image to the gallery
+            contextReference.get()?.let { context ->
+                bitmap?.let {
+                    saveImageToGallery(context, it)
+                } ?: Toast.makeText(context, "Failed to download image.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun saveImageToGallery(context: Context, bitmap: Bitmap) {
+        val contentResolver = context.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+        }
+
+        val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+            contentResolver.openOutputStream(it).use { outputStream ->
+                if (outputStream != null) {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                }
+                Toast.makeText(context, "Image saved to gallery!", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -179,7 +192,6 @@ class SearchActivity : AppCompatActivity() {
     private fun showImageDialog(photo: PhotoModel) {
         val builder = AlertDialog.Builder(this)
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_image_view, null)
-        val context = this
 
         val dialogImageView = dialogView.findViewById<ImageView>(R.id.dialog_image)
         val saveButton = dialogView.findViewById<Button>(R.id.dialog_save_button)
@@ -187,24 +199,39 @@ class SearchActivity : AppCompatActivity() {
         Glide.with(this).load(photo.url).into(dialogImageView)
 
         saveButton.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(
-                    context, Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                val downloadTask = ImageDownloadTask(WeakReference(context), photo.url)
-                downloadTask.execute()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.READ_MEDIA_IMAGES
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
+                        REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+                    )
+                } else {
+                    ImageDownloadTask(WeakReference(this), photo.url).execute()
+                }
             } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE
-                )
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+                    )
+                } else {
+                    ImageDownloadTask(WeakReference(this), photo.url).execute()
+                }
             }
         }
 
         builder.setView(dialogView)
-        val dialog = builder.create()
-        dialog.show()
+        builder.create().show()
     }
 
     companion object {
